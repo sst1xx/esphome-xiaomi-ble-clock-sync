@@ -105,5 +105,7 @@ On every interval the ESP32:
 4. Disconnects
 5. Resumes BLE scan
 
+A **Sync Clock Now** button is available on the ESPHome web interface for manual on-demand synchronization. If a sync is already in progress, the button press is ignored (script runs in `single` mode).
+
 BLE service UUID: `ebe0ccb0-7a0a-4b0c-8a1a-6ff2997da3a6`  
 Time characteristic UUID: `ebe0ccb7-7a0a-4b0c-8a1a-6ff2997da3a6`

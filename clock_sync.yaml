@@ -20,8 +20,9 @@ ble_client:
     id: xiaomi_clock_ble
     auto_connect: false
 
-interval:
-  - interval: ${clock_sync_interval}
+script:
+  - id: clock_sync_run
+    mode: single
     then:
       - esp32_ble_tracker.stop_scan:
       - ble_client.connect: xiaomi_clock_ble
@@ -35,3 +36,14 @@ interval:
             return {(uint8_t)t, (uint8_t)(t>>8), (uint8_t)(t>>16), (uint8_t)(t>>24), tz};
       - ble_client.disconnect: xiaomi_clock_ble
       - esp32_ble_tracker.start_scan:
+
+interval:
+  - interval: ${clock_sync_interval}
+    then:
+      - script.execute: clock_sync_run
+
+button:
+  - platform: template
+    name: "Sync Clock Now"
+    on_press:
+      - script.execute: clock_sync_run
