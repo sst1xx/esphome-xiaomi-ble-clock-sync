@@ -6,8 +6,8 @@ ESPHome package for periodic BLE time synchronization of Xiaomi thermometers wit
 
 | Device | ESPHome sensor platform |
 |---|---|
-| Xiaomi Mijia LYWSD02 | — (display only, no sensor platform) |
-| MHO-C303 | [`xiaomi_mhoc303`](https://esphome.io/components/sensor/xiaomi_ble/#mho-c303) |
+| [Xiaomi Mijia LYWSD02](https://esphome.io/components/sensor/xiaomi_ble/#lywsd02) | — (display only, no sensor platform) |
+| [MHO-C303](https://esphome.io/components/sensor/xiaomi_ble/#mho-c303) | [`xiaomi_mhoc303`](https://esphome.io/components/sensor/xiaomi_ble/#mho-c303) |
 
 Both devices share the same BLE time-sync protocol (same service and characteristic UUIDs).
 
