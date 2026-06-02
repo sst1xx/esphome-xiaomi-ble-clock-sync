@@ -1,0 +1,23 @@
+substitutions:
+  clock_mac: "AA:BB:CC:DD:EE:FF"       # Replace with your device MAC address
+  clock_sync_interval: "24h"            # Change to e.g. "5min" for testing
+
+packages:
+  clock_sync: github://sst1xx/esphome-xiaomi-ble-clock-sync/clock_sync.yaml@main
+
+esphome:
+  name: my-device
+
+esp32:
+  board: esp32dev
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+esp32_ble_tracker:
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Moscow

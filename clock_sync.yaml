@@ -1,0 +1,37 @@
+# clock_sync.yaml
+#
+# ESPHome package: periodic BLE time sync for Xiaomi LYWSD02 / MHO-C303
+#
+# Required substitutions in your config:
+#   clock_mac: "AA:BB:CC:DD:EE:FF"
+#
+# Optional substitutions (defaults shown):
+#   clock_sync_interval: "24h"   # use "5min" for testing
+#
+# Required in your config (not included here to avoid conflicts):
+#   esp32_ble_tracker:
+#   time:
+#     - platform: sntp
+#       id: sntp_time
+#       ...
+
+ble_client:
+  - mac_address: ${clock_mac}
+    id: xiaomi_clock_ble
+    auto_connect: false
+
+interval:
+  - interval: ${clock_sync_interval}
+    then:
+      - esp32_ble_tracker.stop_scan:
+      - ble_client.connect: xiaomi_clock_ble
+      - ble_client.ble_write:
+          id: xiaomi_clock_ble
+          service_uuid: "ebe0ccb0-7a0a-4b0c-8a1a-6ff2997da3a6"
+          characteristic_uuid: "ebe0ccb7-7a0a-4b0c-8a1a-6ff2997da3a6"
+          value: !lambda |-
+            uint32_t t = id(sntp_time).utcnow().timestamp;
+            uint8_t tz = 3;
+            return {(uint8_t)t, (uint8_t)(t>>8), (uint8_t)(t>>16), (uint8_t)(t>>24), tz};
+      - ble_client.disconnect: xiaomi_clock_ble
+      - esp32_ble_tracker.start_scan:
