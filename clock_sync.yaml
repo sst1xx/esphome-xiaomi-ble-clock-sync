@@ -5,11 +5,10 @@
 # Required substitutions in your config:
 #   clock_mac: "AA:BB:CC:DD:EE:FF"
 #
-# Optional substitutions (defaults shown):
-#   clock_sync_interval: "24h"   # use "5min" for testing
-#
 # Required in your config (not included here to avoid conflicts):
 #   esp32_ble_tracker:
+#     scan_parameters:
+#       active: true   # required for ble_client to find the device
 #   time:
 #     - platform: sntp
 #       id: sntp_time
@@ -18,32 +17,34 @@
 ble_client:
   - mac_address: ${clock_mac}
     id: xiaomi_clock_ble
-    auto_connect: false
+    on_connect:
+      then:
+        - delay: 3s
+        - ble_client.ble_write:
+            id: xiaomi_clock_ble
+            service_uuid: "ebe0ccb0-7a0a-4b0c-8a1a-6ff2997da3a6"
+            characteristic_uuid: "ebe0ccb7-7a0a-4b0c-8a1a-6ff2997da3a6"
+            value: !lambda |-
+              auto t = id(sntp_time).utcnow();
+              uint8_t tz = 3;
+              return {(uint8_t)t.timestamp, (uint8_t)(t.timestamp>>8),
+                      (uint8_t)(t.timestamp>>16), (uint8_t)(t.timestamp>>24), tz};
+        - switch.turn_off: xiaomi_clock_ble_connection
 
-script:
-  - id: clock_sync_run
-    mode: single
-    then:
-      - esp32_ble_tracker.stop_scan:
-      - ble_client.connect: xiaomi_clock_ble
-      - ble_client.ble_write:
-          id: xiaomi_clock_ble
-          service_uuid: "ebe0ccb0-7a0a-4b0c-8a1a-6ff2997da3a6"
-          characteristic_uuid: "ebe0ccb7-7a0a-4b0c-8a1a-6ff2997da3a6"
-          value: !lambda |-
-            uint32_t t = id(sntp_time).utcnow().timestamp;
-            uint8_t tz = 3;
-            return {(uint8_t)t, (uint8_t)(t>>8), (uint8_t)(t>>16), (uint8_t)(t>>24), tz};
-      - ble_client.disconnect: xiaomi_clock_ble
-      - esp32_ble_tracker.start_scan:
+switch:
+  - platform: ble_client
+    ble_client_id: xiaomi_clock_ble
+    id: xiaomi_clock_ble_connection
+    internal: true
+    restore_mode: ALWAYS_OFF
 
 interval:
-  - interval: ${clock_sync_interval}
+  - interval: 24h
     then:
-      - script.execute: clock_sync_run
+      - switch.turn_on: xiaomi_clock_ble_connection
 
 button:
   - platform: template
     name: "Sync Clock Now"
     on_press:
-      - script.execute: clock_sync_run
+      - switch.turn_on: xiaomi_clock_ble_connection
